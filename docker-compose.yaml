@@ -1,7 +1,6 @@
 services:
   db:
     image: mysql:8.0
-    container_name: mysql_db
     env_file:
       - .env
     environment:
@@ -13,17 +12,34 @@ services:
       - '3306:3306'
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - dynamic_web_systems
   
   backend:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: backend
     volumes:
-      - .:/app
+      - .:/backend
     ports:
       - '8000:8000'
-    container_name: django_backend
     depends_on:
       - db
     command: python manage.py runserver 0.0.0.0:8000
+    networks:
+      - dynamic_web_systems
+
+  migrate:
+    image: backend
+    command: python manage.py migrate
+    depends_on:
+      - db
+    networks:
+      - dynamic_web_systems
 
 volumes:
   mysql_data:
+
+networks:
+  dynamic_web_systems:
