@@ -1,3 +1,7 @@
-docker-compose build
-docker-compose up
-docker-compose exec backend python manage.py migrate
+## To run the project
+#docker-compose build
+#docker-compose up
+
+
+## To clear docker images
+#docker system prune -a
