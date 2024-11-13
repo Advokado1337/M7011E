@@ -34,7 +34,7 @@ services:
     image: backend
     command: python manage.py migrate
     depends_on:
-      - db
+      - backend
     networks:
       - dynamic_web_systems
 
