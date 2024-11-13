@@ -20,5 +20,3 @@ class Movies(models.Model):
     genre = models.CharField(max_length=255)
     director = models.CharField(max_length=255)
     actors = models.CharField(max_length=255)
-
-

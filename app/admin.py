@@ -1,8 +1,10 @@
 # Register your models here.
 
 from django.contrib import admin
+from django.apps import apps
 
-from .models import *
-
-admin.site.register(Users)
-admin.site.register(Movies)
+for model in apps.get_models():
+    try:
+        admin.site.register(model)
+    except admin.sites.AlreadyRegistered:
+        pass
