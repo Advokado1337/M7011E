@@ -1,4 +1,10 @@
 from django.shortcuts import render, HttpResponse
 
 def home(request):
-    return HttpResponse("<h1>Hello World!</h1>")
+    return render(request, 'home.html')
+
+def login(request):
+    return render(request, 'login.html')
+
+def signup(request):
+    return render(request, 'signup.html')

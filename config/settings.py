@@ -28,7 +28,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'bad-default-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True')
 
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost').split(',')
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost').split()
 
 
 # Application definition
@@ -84,7 +84,7 @@ DATABASES = {
         'USER': os.getenv('MYSQL_USER'),
         'PASSWORD': os.getenv('MYSQL_PASSWORD'),
         'HOST': os.getenv('DB_HOST', 'db'),  # Use 'db' as default from .env
-        'PORT': os.getenv('DB_PORT', '3306'),  # Use '3306' as default from .env
+        'PORT': os.getenv('DB_PORT', '3306')  # Use '3306' as default from .env
     }
 }
 
