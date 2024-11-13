@@ -1,7 +1,5 @@
-## To run the project
-#docker-compose build
-#docker-compose up
+# To run the project
+docker-compose up --build
 
-
-## To clear docker images
-#docker system prune -a
+# To clear docker images
+docker system prune -a
