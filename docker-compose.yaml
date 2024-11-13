@@ -2,7 +2,7 @@ version: '3'
 services:
   db:
     image: mysql:8.0
-    container_name: project_name_mariadb
+    container_name: mysql_server
     restart: always
     volumes:
       - data:/var/lib/mysql
@@ -19,17 +19,17 @@ services:
       timeout: 5s
       retries: 5
   
-  backend:
+  app:
     build: 
       context: .
       dockerfile: Dockerfile
-    container_name: project_name_backend
+    container_name: django_app
     command: >
       sh -c "python manage.py migrate --noinput && 
          python manage.py runserver 0.0.0.0:8000"
     restart: always
     volumes:
-      - .:/backend
+      - .:/app
     ports:
       - "8000:8000"
     env_file:

@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 
+print('CHECK OS ENVIRONMENT VARIABLES', os.getenv('MYSQL_DATABASE'), os.getenv('MYSQL_USER'), os.getenv('MYSQL_PASSWORD'))
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
