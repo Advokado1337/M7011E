@@ -13,4 +13,12 @@ class Users(models.Model):
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
 
+class Movies(models.Model):
+    movie_id = models.AutoField(primary_key=True)
+    title = models.CharField(max_length=255)
+    year = models.IntegerField()
+    genre = models.CharField(max_length=255)
+    director = models.CharField(max_length=255)
+    actors = models.CharField(max_length=255)
+
 
