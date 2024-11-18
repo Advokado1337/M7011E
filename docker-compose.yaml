@@ -37,5 +37,22 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  populate_data:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: populate_data
+    command: >
+      sh -c "python manage.py makemigrations app &&
+             python manage.py migrate && 
+             python manage.py populate_dummy_data"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
 volumes:
   data:
