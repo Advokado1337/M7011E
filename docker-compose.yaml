@@ -24,31 +24,15 @@ services:
       dockerfile: Dockerfile
     container_name: django_app
     command: >
-      sh -c "python manage.py makemigrations app &&
-             python manage.py migrate && 
+      sh -c "python manage.py populate_dummy_data &&
+             python manage.py makemigrations app &&
+             python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
     restart: always
     volumes:
       - .:/app
     ports:
       - "8000:8000"
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-
-  populate_data:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    container_name: populate_data
-    command: >
-      sh -c "python manage.py makemigrations app &&
-             python manage.py migrate && 
-             python manage.py populate_dummy_data"
-    volumes:
-      - .:/app
     env_file:
       - .env
     depends_on:
