@@ -25,7 +25,6 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('login/', views.login, name='login'),
     path('signup/', views.signup, name='signup'),
-    path('/api/', include('app.api')),
     path('users/', users_list, name='users_list'),
     path('users/<int:pk>/', users_detail, name='users_detail'),
     path('categories/', category_list, name='category_list'),
