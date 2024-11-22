@@ -51,6 +51,15 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
+    # Handles throttling, works for anon but unsure about user since we have no auth implementation
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '10/hour',  
+        'user': '1000/hour',  
+    }
 }
 
 MIDDLEWARE = [
