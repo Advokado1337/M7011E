@@ -12,20 +12,18 @@ from app.api.viewsets import (
     RatingViewSet,
 )
 
-# Initialize the DefaultRouter
-router = DefaultRouter()
-
-# Register all your ViewSets
-router.register(r'users', UsersViewSet, basename='users')
-router.register(r'categories', CategoryViewSet, basename='categories')
-router.register(r'movies', MovieViewSet, basename='movies')
-router.register(r'movie-categories', MovieCategoryViewSet, basename='movie-categories')
-router.register(r'movie-directors', MovieDirectorViewSet, basename='movie-directors')
-router.register(r'movie-director-assignments', MovieDirectorAssignmentViewSet, basename='movie-director-assignments')
-router.register(r'descriptions', DescriptionViewSet, basename='descriptions')
-router.register(r'ratings', RatingViewSet, basename='ratings')
+# Initialize the DefaultRouter for v1
+router_v1 = DefaultRouter()
+router_v1.register(r'users', UsersViewSet, basename='users')
+router_v1.register(r'categories', CategoryViewSet, basename='categories')
+router_v1.register(r'movies', MovieViewSet, basename='movies')
+router_v1.register(r'movie-categories', MovieCategoryViewSet, basename='movie-categories')
+router_v1.register(r'movie-directors', MovieDirectorViewSet, basename='movie-directors')
+router_v1.register(r'movie-director-assignments', MovieDirectorAssignmentViewSet, basename='movie-director-assignments')
+router_v1.register(r'descriptions', DescriptionViewSet, basename='descriptions')
+router_v1.register(r'ratings', RatingViewSet, basename='ratings')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include(router.urls)),  # Include all router-generated URLs under the 'api/' path
+    path('api/v1/', include(router_v1.urls)),  # Version 1
 ]
