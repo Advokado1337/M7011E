@@ -1,4 +1,5 @@
 from rest_framework.decorators import api_view, permission_classes
+from django.contrib.auth.decorators import user_passes_test
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
@@ -30,21 +31,24 @@ def login(request):
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if user.check_password(request.data['password']):
-        if Token.objects.get(user=user):
-            Token.objects.get(user=user).delete()  # Delete the token if it was already created
-        token = Token.objects.create(user=user)
+        try:
+            if Token.objects.get(user=user):
+                Token.objects.get(user=user).delete()  # Delete the token if it was already created
+        except Token.DoesNotExist:
+            token = Token.objects.create(user=user)
         return Response({'token': token.key, 'email': UsersSerializer(user).data})
     return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def logout(request):
-    if Token.objects.filter(key=request.data['token']).exists():
-        Token.objects.get(key=request.data['token']).delete()
+    if Token.objects.filter(key=request.data['Token']).exists():
+        Token.objects.get(key=request.data['Token']).delete()
         return Response({'message': 'Logout successful!'})
     return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@user_passes_test(lambda u: u.is_superuser)
 def users_detail(request, pk):
     try:
         user = User.objects.get(pk=pk)
