@@ -1,13 +1,36 @@
 from django.core.management.base import BaseCommand
-from app.models import Users, Category, Movie, MovieCategory, MovieDirector, MovieDirectorAssignment, Description, Rating
+from app.models import Category, Movie, MovieCategory, MovieDirector, MovieDirectorAssignment, Description, Rating
+from django.contrib.auth.models import User
+
 
 class Command(BaseCommand):
     help = 'Populate the database with dummy data'
 
     def handle(self, *args, **kwargs):
         # Create Users
-        user1, created = Users.objects.get_or_create(username='john_doe', defaults={'password': 'password123'})
-        user2, created = Users.objects.get_or_create(username='jane_smith', defaults={'password': 'password456'})
+        user1, created = User.objects.get_or_create(
+            username='john_doe',
+            email='john_doe@example.com',
+            defaults={
+                'password': 'password123',
+            }
+        )
+        if created:
+            user1.set_password('password123')
+            user1.save()
+
+        user2, created = User.objects.get_or_create(
+            username='jane_smith',
+            email='jane_smith@example.com',
+            defaults={
+                'password': 'password456',
+            }
+        )
+        if created:
+            user2.set_password('password456')
+            user2.is_staff = True
+            user2.is_superuser = True
+            user2.save()
 
         # Create Categories
         category1, created = Category.objects.get_or_create(category='Action')

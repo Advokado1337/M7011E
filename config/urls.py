@@ -1,7 +1,7 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 from app.api.viewsets import (
-    users_list, users_detail, category_list, category_detail, movie_list, movie_detail,
+    signup,login, users_detail, category_list, category_detail, movie_list, movie_detail,
     movie_category_list, movie_category_detail, movie_director_list, movie_director_detail,
     movie_director_assignment_list, movie_director_assignment_detail, description_list,
     description_detail, rating_list, rating_detail
@@ -9,8 +9,8 @@ from app.api.viewsets import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/users/', users_list, name='users_list'),
-    path('api/users/<int:pk>/', users_detail, name='users_detail'),
+    path('api/signup/', signup, name='signup'),
+    path('api/login/', login, name='login'),    path('api/users/<int:pk>/', users_detail, name='users_detail'),
     path('api/categories/', category_list, name='category_list'),
     path('api/categories/<int:pk>/', category_detail, name='category_detail'),
     path('api/movies/', movie_list, name='movie_list'),

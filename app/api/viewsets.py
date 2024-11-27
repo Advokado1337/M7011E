@@ -1,46 +1,71 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-from app.models import Users, Category, Movie, MovieCategory, MovieDirector, MovieDirectorAssignment, Description, Rating
-from app.api.serializer import UsersSerializer, CategorySerializer, MovieSerializer, MovieCategorySerializer, MovieDirectorSerializer, MovieDirectorAssignmentSerializer, DescriptionSerializer, RatingSerializer
-
+from app.models import  Category, Movie, MovieCategory, MovieDirector, MovieDirectorAssignment, Description, Rating
+from rest_framework.authtoken.models import Token
+from app.api.serializer import UsersSerializer, CategorySerializer, MovieSerializer, MovieCategorySerializer, MovieDirectorSerializer, MovieDirectorAssignmentSerializer, DescriptionSerializer, RatingSerializer,UserRegistrationSerializer
+from django.contrib.auth.models import User
 # Users CRUD operations
-@api_view(['GET', 'POST'])
-def users_list(request):
-    if request.method == 'GET':
-        users = Users.objects.all()
-        serializer = UsersSerializer(users, many=True)
-        return Response(serializer.data)
-    elif request.method == 'POST':
-        serializer = UsersSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            response_data = {
-                'message': 'User created successfully!',
-                'data': serializer.data,
-            }
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def signup(request):
+    serializer = UserRegistrationSerializer(data=request.data)
+    if serializer.is_valid():
+        if User.objects.filter(email=serializer.data['email']).exists():
+            return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        user = User.objects.get(email=serializer.data['email'])
+        user.set_password(serializer.data['password'])
+        user.save()
+        return Response({'email': serializer.data}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login(request):
+    try:
+        user = User.objects.get(email=request.data['email'])
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if user.check_password(request.data['password']):
+        if Token.objects.get(user=user):
+            Token.objects.get(user=user).delete()  # Delete the token if it was already created
+        token = Token.objects.create(user=user)
+        return Response({'token': token.key, 'email': UsersSerializer(user).data})
+    return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def logout(request):
+    if Token.objects.filter(key=request.data['token']).exists():
+        Token.objects.get(key=request.data['token']).delete()
+        return Response({'message': 'Logout successful!'})
+    return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def users_detail(request, pk):
     try:
-        user = Users.objects.get(pk=pk)
-    except Users.DoesNotExist:
+        user = User.objects.get(pk=pk)
+    except User.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
         serializer = UsersSerializer(user)
         return Response(serializer.data)
-    elif request.method == 'PUT':
-        serializer = UsersSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'DELETE':
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    elif request.method == 'PUT' or request.method == 'DELETE':
+        if not request.user.is_staff:
+            return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+        if request.method == 'PUT':
+            serializer = UsersSerializer(user, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif request.method == 'DELETE':
+            user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 # Category CRUD operations
 @api_view(['GET', 'POST'])
@@ -307,3 +332,5 @@ def rating_detail(request, pk):
     elif request.method == 'DELETE':
         rating.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
