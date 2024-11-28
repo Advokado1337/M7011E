@@ -7,6 +7,8 @@ from app.models import  Category, Movie, MovieCategory, MovieDirector, MovieDire
 from rest_framework.authtoken.models import Token
 from app.api.serializer import UsersSerializer, CategorySerializer, MovieSerializer, MovieCategorySerializer, MovieDirectorSerializer, MovieDirectorAssignmentSerializer, DescriptionSerializer, RatingSerializer,UserRegistrationSerializer
 from django.contrib.auth.models import User
+from app.decorators import token_and_superuser_required,token_and_isstaff_required
+
 # Users CRUD operations
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -34,21 +36,29 @@ def login(request):
         try:
             if Token.objects.get(user=user):
                 Token.objects.get(user=user).delete()  # Delete the token if it was already created
+            token = Token.objects.create(user=user)
         except Token.DoesNotExist:
             token = Token.objects.create(user=user)
+
+
         return Response({'token': token.key, 'email': UsersSerializer(user).data})
     return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def logout(request):
-    if Token.objects.filter(key=request.data['Token']).exists():
-        Token.objects.get(key=request.data['Token']).delete()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Token '):
+        return Response({'error': 'Token required'}, status=401)
+
+    token_key = auth_header.split('Token ')[1]
+    if Token.objects.filter(key=token_key).exists():
+        Token.objects.get(key=token_key).delete()
         return Response({'message': 'Logout successful!'})
     return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-@user_passes_test(lambda u: u.is_superuser)
+@token_and_superuser_required
 def users_detail(request, pk):
     try:
         user = User.objects.get(pk=pk)
@@ -59,8 +69,6 @@ def users_detail(request, pk):
         serializer = UsersSerializer(user)
         return Response(serializer.data)
     elif request.method == 'PUT' or request.method == 'DELETE':
-        if not request.user.is_staff:
-            return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
         if request.method == 'PUT':
             serializer = UsersSerializer(user, data=request.data)
             if serializer.is_valid():
