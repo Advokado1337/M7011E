@@ -7,8 +7,13 @@ from app.api.viewsets import (
     description_detail, rating_list, rating_detail, logout
 )
 
+import app.views as FE
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', FE.home, name='frontend_home'),
+    path('login/', FE.login, name='frontend_login'),
+    path('signup/', FE.signup, name='frontend_signup'),
     path('api/logout/', logout, name='logout'),
     path('api/signup/', signup, name='signup'),
     path('api/login/', login, name='login'),    

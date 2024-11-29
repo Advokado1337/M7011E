@@ -5,12 +5,7 @@ from rest_framework import status
 
 
 
-
-
-
-
-
-#--------------Front
+#--------------Frontend Views-----------------#
 def home(request):
     return render(request, 'home.html')
 
