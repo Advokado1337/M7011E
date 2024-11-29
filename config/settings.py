@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'app',
     'rest_framework',
     'rest_framework.authtoken'
-
 ]
 
 
@@ -79,7 +78,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'app' / 'templates'],  # Add templates directory to the TEMPLATES setting
+        'DIRS': [],  # Add templates directory to the TEMPLATES setting
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
