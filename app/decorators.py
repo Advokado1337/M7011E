@@ -33,7 +33,7 @@ def token_and_superuser_required(view_func):
 
 def token_and_isstaff_required(view_func):
     """
-    A decorator to check if the user has a valid token and is a superuser.
+    A decorator to check if the user has a valid token and is staff.
     """
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
