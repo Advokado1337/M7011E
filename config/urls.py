@@ -4,14 +4,15 @@ from app.api.viewsets import (
     signup,login, users_detail, category_list, category_detail, movie_list, movie_detail,
     movie_category_list, movie_category_detail, movie_director_list, movie_director_detail,
     movie_director_assignment_list, movie_director_assignment_detail, description_list,
-    description_detail, rating_list, rating_detail, logout
+    description_detail, rating_list, rating_detail, logout,update_role
 )
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/logout/', logout, name='logout'),
     path('api/signup/', signup, name='signup'),
-    path('api/login/', login, name='login'),    
+    path('api/login/', login, name='login'),  
+    path('api/update-user/', update_role, name='update_role'),  
     path('api/users/<int:pk>/', users_detail, name='users_detail'),
     path('api/categories/', category_list, name='category_list'),
     path('api/categories/<int:pk>/', category_detail, name='category_detail'),
