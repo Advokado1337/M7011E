@@ -14,12 +14,14 @@ from app.decorators import token_and_superuser_required,token_and_isstaff_requir
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def signup(request):
+    if 'email' not in request.data or 'password' not in request.data:
+        return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
     serializer = UserRegistrationSerializer(data=request.data)
+
     if serializer.is_valid():
-        if User.objects.filter(email=serializer.data['email']).exists():
+        if User.objects.filter(email=serializer.validated_data['email']).exists():
             return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
-        user = User.objects.get(email=serializer.data['email'])
+        user = serializer.create(serializer.validated_data)
         user.set_password(serializer.data['password'])
         user.save()
         return Response({'email': serializer.data}, status=status.HTTP_201_CREATED)
@@ -39,6 +41,8 @@ def update_role(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
+    if 'email' not in request.data or 'password' not in request.data:
+        return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
     try:
         user = User.objects.get(email=request.data['email'])
     except User.DoesNotExist:
@@ -53,7 +57,7 @@ def login(request):
             token = Token.objects.create(user=user)
 
 
-        return Response({'token': token.key, 'email': UsersSerializer(user).data})
+        return Response({'token': token.key, 'email': UsersSerializer(user).data},status=status.HTTP_200_OK)
     return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])

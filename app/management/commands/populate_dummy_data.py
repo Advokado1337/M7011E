@@ -9,6 +9,17 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         # Create Users
         user1, created = User.objects.get_or_create(
+            username='eric_john',
+            email='eric_john@example.com',
+            defaults={
+                'password': 'password678',
+            }
+        )
+        if created:
+            user1.set_password('password678')
+            user1.save()
+        
+        user2, created = User.objects.get_or_create(
             username='john_doe',
             email='john_doe@example.com',
             defaults={
@@ -16,10 +27,11 @@ class Command(BaseCommand):
             }
         )
         if created:
-            user1.set_password('password123')
-            user1.save()
+            user2.set_password('password123')
+            user2.is_staff = True
+            user2.save()
 
-        user2, created = User.objects.get_or_create(
+        user3, created = User.objects.get_or_create(
             username='jane_smith',
             email='jane_smith@example.com',
             defaults={
@@ -27,10 +39,10 @@ class Command(BaseCommand):
             }
         )
         if created:
-            user2.set_password('password456')
-            user2.is_staff = True
-            user2.is_superuser = True
-            user2.save()
+            user3.set_password('password456')
+            user3.is_staff = True
+            user3.is_superuser = True
+            user3.save()
 
         # Create Categories
         category1, created = Category.objects.get_or_create(category='Action')
