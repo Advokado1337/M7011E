@@ -1,31 +1,29 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from app.api.viewsets import (
-    signup,login, users_detail, category_list, category_detail, movie_list, movie_detail,
-    movie_category_list, movie_category_detail, movie_director_list, movie_director_detail,
-    movie_director_assignment_list, movie_director_assignment_detail, description_list,
-    description_detail, rating_list, rating_detail, logout,update_role
+    UsersViewSet,
+    CategoryViewSet,
+    MovieViewSet,
+    MovieCategoryViewSet,
+    MovieDirectorViewSet,
+    MovieDirectorAssignmentViewSet,
+    DescriptionViewSet,
+    RatingViewSet,
 )
+
+# Initialize the DefaultRouter
+router = DefaultRouter()
+router.register(r'users', UsersViewSet, basename='users')
+router.register(r'categories', CategoryViewSet, basename='categories')
+router.register(r'movies', MovieViewSet, basename='movies')
+router.register(r'movie-categories', MovieCategoryViewSet, basename='movie-categories')
+router.register(r'movie-directors', MovieDirectorViewSet, basename='movie-directors')
+router.register(r'movie-director-assignments', MovieDirectorAssignmentViewSet, basename='movie-director-assignments')
+router.register(r'descriptions', DescriptionViewSet, basename='descriptions')
+router.register(r'ratings', RatingViewSet, basename='ratings')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/logout/', logout, name='logout'),
-    path('api/signup/', signup, name='signup'),
-    path('api/login/', login, name='login'),  
-    path('api/update-user/', update_role, name='update_role'),  
-    path('api/users/<int:pk>/', users_detail, name='users_detail'),
-    path('api/categories/', category_list, name='category_list'),
-    path('api/categories/<int:pk>/', category_detail, name='category_detail'),
-    path('api/movies/', movie_list, name='movie_list'),
-    path('api/movies/<int:pk>/', movie_detail, name='movie_detail'),
-    path('api/movie-categories/', movie_category_list, name='movie_category_list'),
-    path('api/movie-categories/<int:pk>/', movie_category_detail, name='movie_category_detail'),
-    path('api/movie-directors/', movie_director_list, name='movie_director_list'),
-    path('api/movie-directors/<int:pk>/', movie_director_detail, name='movie_director_detail'),
-    path('api/movie-director-assignments/', movie_director_assignment_list, name='movie_director_assignment_list'),
-    path('api/movie-director-assignments/<int:pk>/', movie_director_assignment_detail, name='movie_director_assignment_detail'),
-    path('api/descriptions/', description_list, name='description_list'),
-    path('api/descriptions/<int:pk>/', description_detail, name='description_detail'),
-    path('api/ratings/', rating_list, name='rating_list'),
-    path('api/ratings/<int:pk>/', rating_detail, name='rating_detail'),
+    path('api/v1/', include(router.urls)),  # Register the API routes with versioning
 ]
