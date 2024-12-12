@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from app.models import Category, Movie, MovieCategory, MovieDirector, MovieDirectorAssignment, Description, Rating
 from django.contrib.auth.models import User
+import os
 
 
 class Command(BaseCommand):
@@ -33,9 +34,9 @@ class Command(BaseCommand):
 
         user3, created = User.objects.get_or_create(
             username='jane_smith',
-            email='jane_smith@example.com',
+            email=os.environ.get('ADMIN'),
             defaults={
-                'password': 'password456',
+                'password': os.environ.get('ADMINPASS'),
             }
         )
         if created:

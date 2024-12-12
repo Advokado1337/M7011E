@@ -7,7 +7,6 @@ def token_and_superuser_required(view_func):
     @wraps(view_func)
     def _wrapped_view(self, request, *args, **kwargs):
         # Check Authorization header
-        print(request.headers)
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith('Token '):
             return JsonResponse({'error': 'Token required'}, status=401)

@@ -69,6 +69,13 @@ class UsersViewSet(viewsets.ModelViewSet):
         user.is_staff = request.data['is_staff']
         user.save()
         return Response({'email': UsersSerializer(user).data})
+    
+    @action(detail=False, methods=['delete'])
+    @token_and_superuser_required
+    def clear_token(self, request):
+        Token.objects.all().delete()
+        return Response({'message': 'Tokens cleared!'}, status=200)
+
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
