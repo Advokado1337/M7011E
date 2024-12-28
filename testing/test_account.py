@@ -42,7 +42,7 @@ def test_signup_existing_email():
     email = generate_random_email()
 
     requests.post(ENDPOINTsignup, data={'email': email, 'password': 'password123'})
-    response = requests.post(ENDPOINTsignup, data={'email': 'test@example.com', 'password': 'password123'})
+    response = requests.post(ENDPOINTsignup, data={'email': email, 'password': 'password123'})
     assert response.status_code == 400
     assert response.json() == {'error': 'Email already exists'}
 

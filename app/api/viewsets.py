@@ -10,14 +10,28 @@ from app.api.serializer import (
     MovieDirectorSerializer, MovieDirectorAssignmentSerializer, DescriptionSerializer,
     RatingSerializer, UserRegistrationSerializer
 )
-from app.decorators import token_and_superuser_required
+from app.decorators import token_and_superuser_required, token_and_staff_required
 
 class UsersViewSet(viewsets.ModelViewSet):
     """
     A ViewSet for managing Users.
     """
-    queryset = User.objects.all()
-    serializer_class = UsersSerializer
+    @action(detail=False, methods=['get'])
+    @token_and_superuser_required
+    def get_user(self, request):
+        if 'pk' not in request.data:
+            return Response({'error': 'User ID is required'}, status=400)
+        try:
+            user = User.objects.get(pk=request.data['pk'])
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+        return Response(UsersSerializer(user).data, status=200)
+
+    @action(detail=False, methods=['get'])
+    @token_and_superuser_required
+    def get_all_users(self, request):
+        users = User.objects.all()
+        return Response(UsersSerializer(users, many=True).data)
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def signup(self, request):
@@ -82,8 +96,47 @@ class CategoryViewSet(viewsets.ModelViewSet):
     """
     A ViewSet for managing Categories.
     """
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+    
+    @action(detail=False, methods=['get'])
+    def get_all_categories(self, request):
+        categories = Category.objects.all()
+        return Response(CategorySerializer(categories, many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def get_category(self, request):
+        if 'pk' not in request.data:
+            return Response({'error': 'Category ID is required'}, status=400)
+        try:
+            category = Category.objects.get(pk=request.data['pk'])
+        except Category.DoesNotExist:
+            return Response({'error': 'Category not found'}, status=404)
+        return Response(CategorySerializer(category).data, status=200)
+    
+    @action(detail=False, methods=['post'])
+    @token_and_staff_required
+    def add_category(self, request):
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+    
+    @action(detail=False, methods=['delete'])
+    @token_and_superuser_required
+    def delete_category(self, request):
+        if 'pk' not in request.data:
+            return Response({'error': 'Category ID is required'}, status=400)
+        try:
+            category = Category.objects.get(pk=request.data['pk'])
+        except Category.DoesNotExist:
+            return Response({'error': 'Category not found'}, status=404)
+        
+        # Delete all instances of the category in MovieCategory
+        MovieCategory.objects.filter(category=category).delete()
+        
+        # Delete the category itself
+        category.delete()
+        return Response({'message': 'Category and related movie categories deleted!'}, status=200)
 
 
 class MovieViewSet(viewsets.ModelViewSet):
