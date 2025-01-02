@@ -1,8 +1,9 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
+from django.shortcuts import redirect
 from rest_framework.decorators import action
 from app.models import Category, Movie, MovieCategory, MovieDirector, MovieDirectorAssignment, Description, Rating
 from app.api.serializer import (
@@ -11,6 +12,9 @@ from app.api.serializer import (
     RatingSerializer, UserRegistrationSerializer
 )
 from app.decorators import token_and_superuser_required
+import requests
+import jwt
+from config.settings import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
 class UsersViewSet(viewsets.ModelViewSet):
     """
@@ -69,7 +73,83 @@ class UsersViewSet(viewsets.ModelViewSet):
         user.is_staff = request.data['is_staff']
         user.save()
         return Response({'email': UsersSerializer(user).data})
+    
+    # TODO: Implement the Google OAuth2 login in a separate class
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def google_login(self, request):
+        # Create state token to prevent CSRF attacks
+        # TODO: Generate a secure state token using SystemRandom and UNICODE ASCII characters
+        state = '123'
+        request.session["google_oauth2_state"] = state
 
+        # Scope for the Google OAuth2 API
+        # TODO: Clean up the code (use urlencode, make params dict and use string formatting)
+        client_id = GOOGLE_CLIENT_ID
+        auth_url = ('https://accounts.google.com/o/oauth2/auth?'
+                    'scope=https%3A//www.googleapis.com/auth/userinfo.email%20https%3A//www.googleapis.com/auth/userinfo.profile&'
+                    'access_type=offline&'
+                    'include_granted_scopes=true&'
+                    'response_type=code&'
+                    'state={}&'
+                    'client_id={}&'
+                    'redirect_uri=http://localhost:8000/api/v1/users/google_login_callback/'.format(state, client_id))
+        
+        return redirect(auth_url)
+
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def google_login_callback(self, request):
+
+        # TODO: Create a serializer for the data
+        data = request.GET
+
+        code = data.get('code')
+        error = data.get('error')
+        state = data.get('state')
+
+        # Handle possible errors/state codes
+        if error is not None:
+            return Response({'error': error}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if code is None or state is None:
+            return Response({'error': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
+
+        session_state = request.session.get("google_oauth2_state")
+        if session_state is None or session_state != state:
+            return Response({'error': 'Invalid state'}, status=status.HTTP_400_BAD_REQUEST)
+
+        del request.session["google_oauth2_state"]
+
+        # Decode the JWT id_token
+
+        tokens = self.get_tokens(code)
+        id_token_decoded = jwt.decode(jwt=tokens['id_token'], options={'verify_signature': False})
+
+        # Check if user already exists in the database
+            # If user exists, log the user in and return the auth token
+
+        user_email = id_token_decoded['email']
+
+        # If user does not exist, create a new user
+
+        # Create a new auth token for the user
+
+        # Return the token and user info
+        return Response({'user email': user_email}, status=200)
+    
+    def get_tokens(self, code: str):
+
+        data = {
+            'code': code,
+            'client_id': GOOGLE_CLIENT_ID,
+            'client_secret': GOOGLE_CLIENT_SECRET,
+            'redirect_uri': 'http://localhost:8000/api/v1/users/google_login_callback/',
+            'grant_type': 'authorization_code'
+        }
+
+        response = requests.post('https://accounts.google.com/o/oauth2/token', data=data)
+        google_tokens = response.json()
+
+        return google_tokens
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """
