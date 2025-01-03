@@ -14,6 +14,7 @@ from app.api.serializer import (
 from app.decorators import token_and_superuser_required
 import requests
 import jwt
+from urllib.parse import urlencode
 from config.settings import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -74,7 +75,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         user.save()
         return Response({'email': UsersSerializer(user).data})
     
-    # TODO: Implement the Google OAuth2 login in a separate class
+    # TODO: Implement the Google OAuth2 login in a separate class/serializer
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def google_login(self, request):
         # Create state token to prevent CSRF attacks
@@ -83,19 +84,24 @@ class UsersViewSet(viewsets.ModelViewSet):
         request.session["google_oauth2_state"] = state
 
         # Scope for the Google OAuth2 API
-        # TODO: Clean up the code (use urlencode, make params dict and use string formatting)
         client_id = GOOGLE_CLIENT_ID
-        auth_url = ('https://accounts.google.com/o/oauth2/auth?'
-                    'scope=https%3A//www.googleapis.com/auth/userinfo.email%20https%3A//www.googleapis.com/auth/userinfo.profile&'
-                    'access_type=offline&'
-                    'include_granted_scopes=true&'
-                    'response_type=code&'
-                    'state={}&'
-                    'client_id={}&'
-                    'redirect_uri=http://localhost:8000/api/v1/users/google_login_callback/'.format(state, client_id))
+
+        params = {
+            'scope': 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+            'access_type': 'offline',
+            'include_granted_scopes': 'true',
+            'response_type': 'code',
+            'state': state,
+            'client_id': client_id,
+            'redirect_uri': 'http://localhost:8000/api/v1/users/google_login_callback/'
+        }
+
+        query_params = urlencode(params)
+        auth_url = f'https://accounts.google.com/o/oauth2/auth?{query_params}'
         
         return redirect(auth_url)
 
+    # TODO: Split the google_login_callback into smaller functions
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def google_login_callback(self, request):
 
@@ -119,22 +125,29 @@ class UsersViewSet(viewsets.ModelViewSet):
 
         del request.session["google_oauth2_state"]
 
-        # Decode the JWT id_token
+        # Decode the JWT access token and get user info
 
         tokens = self.get_tokens(code)
-        id_token_decoded = jwt.decode(jwt=tokens['id_token'], options={'verify_signature': False})
+        user_info = self.get_user_info(tokens['access_token'])
 
         # Check if user already exists in the database
+            # TODO: Make sure its not a pre-existing user with the same email  
+            
             # If user exists, log the user in and return the auth token
+            # If user does not exist, create a new user and return the auth token
 
-        user_email = id_token_decoded['email']
-
-        # If user does not exist, create a new user
+        try:
+            user = User.objects.get(email=user_info['email'])
+        except User.DoesNotExist:
+            user = User.objects.create_user(email=user_info['email'], username=user_info['name'].replace(' ', '_'))
+            user.save()
 
         # Create a new auth token for the user
+        Token.objects.filter(user=user).delete()  # Remove old token
+        token = Token.objects.create(user=user)
 
         # Return the token and user info
-        return Response({'user email': user_email}, status=200)
+        return Response({'token': token.key, 'email': UsersSerializer(user).data}, status=200)
     
     def get_tokens(self, code: str):
 
@@ -150,6 +163,13 @@ class UsersViewSet(viewsets.ModelViewSet):
         google_tokens = response.json()
 
         return google_tokens
+
+    def get_user_info(self, access_token: str):
+        
+        response = requests.get('https://www.googleapis.com/oauth2/v1/userinfo', headers={'Authorization': f'Bearer {access_token}'})
+        user_info = response.json()
+
+        return user_info
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """
