@@ -14,6 +14,8 @@ from app.api.serializer import (
 from app.decorators import token_and_superuser_required
 import requests
 import jwt
+from oauthlib.common import UNICODE_ASCII_CHARACTER_SET
+from random import SystemRandom
 from urllib.parse import urlencode
 from config.settings import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
@@ -78,9 +80,9 @@ class UsersViewSet(viewsets.ModelViewSet):
     # TODO: Implement the Google OAuth2 login in a separate class/serializer
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def google_login(self, request):
+
         # Create state token to prevent CSRF attacks
-        # TODO: Generate a secure state token using SystemRandom and UNICODE ASCII characters
-        state = '123'
+        state = self._generate_state_token()
         request.session["google_oauth2_state"] = state
 
         # Scope for the Google OAuth2 API
@@ -100,6 +102,12 @@ class UsersViewSet(viewsets.ModelViewSet):
         auth_url = f'https://accounts.google.com/o/oauth2/auth?{query_params}'
         
         return redirect(auth_url)
+    
+    @staticmethod
+    def _generate_state_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
+        rand = SystemRandom()
+        state_value = "".join(rand.choice(chars) for _ in range(length))
+        return state_value
 
     # TODO: Split the google_login_callback into smaller functions
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
@@ -147,7 +155,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         token = Token.objects.create(user=user)
 
         # Return the token and user info
-        return Response({'token': token.key, 'email': UsersSerializer(user).data}, status=200)
+        return Response({'state': session_state, 'token': token.key, 'email': UsersSerializer(user).data}, status=200)
     
     def get_tokens(self, code: str):
 
