@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from rest_framework.decorators import action
 from django.db import transaction
 
+
 from app.models import Category, Movie, MovieCategory, MovieDirector, MovieDirectorAssignment, Description, Rating
 from app.api.serializer import (
     UsersSerializer, CategorySerializer, MovieSerializer, MovieCategorySerializer,
@@ -20,21 +21,34 @@ class UsersViewSet(viewsets.ModelViewSet):
     A ViewSet for managing Users.
 
     """
+
+    
     @token_and_superuser_required
     def list(self, request):
+        """
+        Retrieve a list of all users.
+        """
         queryset = User.objects.all()
         serializer = UsersSerializer(queryset, many=True)
         return Response(serializer.data)
 
     @token_and_superuser_required
     def retrieve(self, request, pk=None):
+        """
+        Retrieve a specific user by ID.
+        """
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
         serializer = UsersSerializer(user)
         return Response(serializer.data)
 
+
+
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def signup(self, request):
+        """
+        Register a new user.
+        """
         if 'email' not in request.data or 'password' not in request.data:
             return Response({'error': 'Email and password are required'}, status=400)
         serializer = UserRegistrationSerializer(data=request.data)
@@ -50,6 +64,9 @@ class UsersViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def login(self, request):
+        """
+        Log in a user and return an authentication token.
+        """
         if 'email' not in request.data or 'password' not in request.data:
             return Response({'error': 'Email and password are required'}, status=400)
         try:
@@ -65,6 +82,9 @@ class UsersViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def logout(self, request):
+        """
+        Log out the current user by deleting their authentication token.
+        """
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith('Token '):
             return Response({'error': 'Token required'}, status=401)
@@ -76,6 +96,9 @@ class UsersViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['put'])
     @token_and_superuser_required
     def update_role(self, request):
+        """
+        Update the role of a user.
+        """
         try:
             user = User.objects.get(email=request.data['email'])
         except User.DoesNotExist:
@@ -87,6 +110,9 @@ class UsersViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['delete'])
     @token_and_superuser_required
     def clear_token(self, request):
+        """
+        Clear all authentication tokens.
+        """
         Token.objects.all().delete()
         return Response({'message': 'Tokens cleared!'}, status=200)
 
@@ -103,6 +129,9 @@ class CategoryViewSet(viewsets.ModelViewSet):
     @token_and_isstaff_required
     @transaction.atomic
     def create(self, request, *args, **kwargs):
+        """
+        Create a new category.
+        """
         category_data = request.data
 
         if 'category' not in category_data:
@@ -121,6 +150,9 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     @token_and_superuser_required
     def destroy(self, request, pk=None):
+        """
+        Delete a category by ID.
+        """
         if pk is None:
             return Response({'error': 'Category ID is required'}, status=400)
         try:
