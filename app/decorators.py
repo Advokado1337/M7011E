@@ -32,7 +32,7 @@ def token_and_isstaff_required(view_func):
     A decorator to check if the user has a valid token and is staff.
     """
     @wraps(view_func)
-    def _wrapped_view(request, *args, **kwargs):
+    def _wrapped_view(self,request, *args, **kwargs):
         # Extract the token from the Authorization header
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith('Token '):
@@ -49,9 +49,9 @@ def token_and_isstaff_required(view_func):
 
         # Check if the user is a superuser
         if not user.is_staff:
-            return JsonResponse({'error': 'Superuser access required'}, status=403)
+            return JsonResponse({'error': 'Staff access required'}, status=403)
 
         # Proceed to the view
-        return view_func(request, *args, **kwargs)
+        return view_func(self,request, *args, **kwargs)
     return _wrapped_view
 

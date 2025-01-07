@@ -23,6 +23,7 @@ def generate_random_email():
 
 
 
+# Testing -------------------------------
 
 def test_signup_success():
     email = generate_random_email()
