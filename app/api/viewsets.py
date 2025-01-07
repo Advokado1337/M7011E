@@ -155,7 +155,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         token = Token.objects.create(user=user)
 
         # Return the token and user info
-        return Response({'state': session_state, 'token': token.key, 'email': UsersSerializer(user).data}, status=200)
+        return Response({'state': session_state, 'token': token.key, 'user data': UsersSerializer(user).data}, status=200)
     
     def get_tokens(self, code: str):
 
