@@ -246,17 +246,14 @@ class MovieViewSet(viewsets.ModelViewSet):
                 return Response({'error': 'Description not found'}, status=404)
         
         if 'category' in request.data:
-            if not Category.objects.filter(category=request.data['category']).exists():
-                return Response({'error': 'Category not found'}, status=404)
-            
             MovieCategory.objects.filter(movie=movie).delete()
-            for category_id in request.data['category']:
+            for category_name in request.data['category']:
                 try:
-                    category = Category.objects.get(pk=category_id)
+                    category = Category.objects.get(category=category_name)
                     MovieCategory.objects.create(movie=movie, category=category)
                 except Category.DoesNotExist:
-                    return Response({'error': f'Category with ID {category_id} not found'}, status=404)
-        return Response(MovieSerializer(movie).data,status=204)
+                    return Response({'error': f'Category with name {category_name} not found'}, status=404)
+        return Response(MovieSerializer(movie).data,status=200)
 
 class MovieCategoryViewSet(viewsets.ModelViewSet):
     """

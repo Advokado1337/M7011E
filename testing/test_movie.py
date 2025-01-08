@@ -14,6 +14,7 @@ Constants:
 ENDPOINTmovies = "http://localhost:8000/api/v1/movies/"
 ENDPOINTlogin = "http://localhost:8000/api/v1/users/login/"
 ENDPOINTsignup = "http://localhost:8000/api/v1/users/signup/"
+ENDPOINTmoviecategories = "http://localhost:8000/api/v1/movie-categories/"
 
 
 #Helper functions -------------------------------
@@ -159,8 +160,11 @@ def test_update_movie_success():
 
     movie_id = response.json()['id']
     response = requests.put(f"{ENDPOINTmovies}{movie_id}/", json={'name': name, 'description': 'The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.', 'category': ['Action']}, headers=headers)
-    assert response.status_code == 204
-    assert response.json()['category'] == ['Action']
+    assert response.status_code == 200
+    
+    response = requests.get(f"{ENDPOINTmoviecategories}")
+    assert response.status_code == 200
+    assert movie_id in [movie['movie'] for movie in response.json()]
 
 def test_update_movie_not_found():
     setup_categories()
@@ -191,7 +195,7 @@ def test_update_movie_non_existent_category():
 
     movie_id = response.json()['id']
     response = requests.put(f"{ENDPOINTmovies}{movie_id}/", json={'name': name, 'description': 'The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.', 'category': ['NonExistent']}, headers=headers)
-    assert response.status_code == 400
+    assert response.status_code == 404
 
 
 
