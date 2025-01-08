@@ -105,7 +105,7 @@ The project uses Pytest for testing. To run the tests:
 
 1. Ensure the containers are built and running using the previous commands.
 
-2. Inside the container, run:
+2. Inside other terminal, run:
 
    ```bash
    python -m pytest
