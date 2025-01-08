@@ -29,6 +29,8 @@ def clear_tokens():
     response = requests.post("http://localhost:8000/api/v1/users/clear_token/")
     return response
 
+# Testing -------------------------------
+
 def test_update_role_success():
     admin_email = "jane_smith@example.com"
     admin_password = 'password456'

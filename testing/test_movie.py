@@ -49,7 +49,19 @@ def random_movie(length):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(length))
 
+def setup_categories():
+    categories = ['Action', 'Comedy', 'Drama']
+
+    categories_server = requests.get("http://localhost:8000/api/v1/categories/").json()
+    if categories != [category['category'] for category in categories_server]:
+        for category in categories:
+            response = requests.post("http://localhost:8000/api/v1/categories/", json={'category': category})
+            assert response.status_code == 201
+            assert 'category' in response.json()
+    
+
 # Testing -------------------------------
+
 
 def test_get_movies_success():
     response = requests.get(ENDPOINTmovies)
@@ -70,6 +82,7 @@ def test_get_specific_movie_success():
     assert response.json()['name'] == movie_name
 
 def test_add_movie_success():
+    setup_categories()
     token = login_auth()
     headers = {'Authorization': f'Token {token}'}
 
@@ -78,19 +91,48 @@ def test_add_movie_success():
     assert 'name' in response.json()
 
 def test_add_movie_missing_fields():
+    setup_categories()
     token = login_auth()
     headers = {'Authorization': f'Token {token}'}
 
-    response = requests.post(ENDPOINTmovies, json={'name': 'The Godfather'}, headers=headers)
+    response = requests.post(ENDPOINTmovies, json={'name': random_movie(7)}, headers=headers)
     assert response.status_code == 400
     assert response.json() == {'error': 'Name, description, and category are required'}
 
 def test_add_movie_wrong_auth():
+    setup_categories()
     token = login_not_auth()
     headers = {'Authorization': f'Token {token}'}
     
-    response = requests.post(ENDPOINTmovies, json={'name': 'The Godfather', 'description': 'The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.', 'category': ['Comedy']}, headers=headers)
+    response = requests.post(ENDPOINTmovies, json={'name': random_movie(7), 'description': 'The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.', 'category': ['Comedy']}, headers=headers)
     assert response.status_code == 403
     assert response.json() == {'error': 'Staff access required'}
+
+def test_add_movie_duplicate_name():
+    setup_categories()
+    token = login_auth()
+    headers = {'Authorization': f'Token {token}'}
+    name = random_movie(7)
+    response = requests.post(ENDPOINTmovies, json={'name': name, 'description': 'The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.', 'category': ['Comedy']}, headers=headers)
+    assert response.status_code == 201
+
+    response = requests.post(ENDPOINTmovies, json={'name': name, 'description': 'The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.', 'category': ['Comedy']}, headers=headers)
+    assert response.status_code == 400
+    assert response.json() == {'error': 'Movie already exists'}
+
+def test_delete_movie_success():
+    setup_categories()
+    token = login_auth()
+    headers = {'Authorization': f'Token {token}'}
+    name = random_movie(7)
+    response = requests.post(ENDPOINTmovies, json={'name': name, 'description': 'The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.', 'category': ['Comedy']}, headers=headers)
+    movide_id = response.json()['id']
+    
+    response = requests.delete(f"{ENDPOINTmovies}{movide_id}/", headers=headers)
+    assert response.status_code == 200
+
+
+
+
 
     

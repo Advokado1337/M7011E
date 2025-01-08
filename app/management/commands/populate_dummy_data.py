@@ -67,6 +67,7 @@ class Command(BaseCommand):
         # Assign Directors to Movies
         MovieDirectorAssignment.objects.get_or_create(movie=movie1, director=director1)
         MovieDirectorAssignment.objects.get_or_create(movie=movie2, director=director2)
+        MovieDirectorAssignment.objects.get_or_create(movie=movie3, director=director1)
 
         # Create Descriptions
         Description.objects.get_or_create(movie=movie1, defaults={'description': 'An epic adventure movie.'})

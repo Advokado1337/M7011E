@@ -22,7 +22,6 @@ class UsersViewSet(viewsets.ModelViewSet):
 
     """
 
-    
     @token_and_superuser_required
     def list(self, request):
         """
@@ -41,8 +40,6 @@ class UsersViewSet(viewsets.ModelViewSet):
         user = get_object_or_404(queryset, pk=pk)
         serializer = UsersSerializer(user)
         return Response(serializer.data)
-
-
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def signup(self, request):
@@ -116,8 +113,6 @@ class UsersViewSet(viewsets.ModelViewSet):
         Token.objects.all().delete()
         return Response({'message': 'Tokens cleared!'}, status=200)
 
-
-
 class CategoryViewSet(viewsets.ModelViewSet):
     """
     A ViewSet for managing Categories.
@@ -164,9 +159,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
         category.delete()
         return Response({'message': 'Category deleted!'}, status=200)
 
-
-
-
 class MovieViewSet(viewsets.ModelViewSet):
     """
     A ViewSet for managing Movies.
@@ -182,7 +174,7 @@ class MovieViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         movie_data = request.data
 
-        if 'name' not in movie_data or 'description' not in movie_data or 'category' not in movie_data:
+        if 'name' not in movie_data or 'description' not in movie_data or 'category' not in movie_data or '':
             return Response({'error': 'Name, description, and category are required'}, status=400)
         
         if 'name' in movie_data and Movie.objects.filter(name=movie_data['name']).exists():
@@ -217,7 +209,7 @@ class MovieViewSet(viewsets.ModelViewSet):
                 Description.objects.filter(movie=movie).delete()
                 movie.delete()
                 return Response({'error': f'Category with Name {category_name} not found'}, status=404)
-
+            
         return Response(movie_serializer.data, status=201)
 
     
@@ -229,11 +221,6 @@ class MovieViewSet(viewsets.ModelViewSet):
             movie = Movie.objects.get(pk=pk)
         except Movie.DoesNotExist:
             return Response({'error': 'Movie not found'}, status=404)
-        
-        Description.objects.filter(movie=movie).delete()
-
-
-        MovieCategory.objects.filter(movie=movie).delete()
         
         movie.delete()
         return Response({'message': 'Movie deleted!'}, status=200)
@@ -266,7 +253,7 @@ class MovieViewSet(viewsets.ModelViewSet):
                     MovieCategory.objects.create(movie=movie, category=category)
                 except Category.DoesNotExist:
                     return Response({'error': f'Category with ID {category_id} not found'}, status=404)
-
+        return Response(MovieSerializer(movie).data,status=204)
 
 class MovieCategoryViewSet(viewsets.ModelViewSet):
     """
@@ -274,7 +261,35 @@ class MovieCategoryViewSet(viewsets.ModelViewSet):
     """
     queryset = MovieCategory.objects.all()
     serializer_class = MovieCategorySerializer
+    
+    @token_and_isstaff_required
+    def destroy(self, request, pk=None):
+        return Response({'error': 'Method not allowed'}, status=405)
+    
+    @token_and_isstaff_required
+    def create(self, request):
+        return Response({'error': 'Method not allowed'}, status=405)
 
+    @token_and_isstaff_required
+    def update(self, request):
+        movie_data = request.data
+        if not Movie.objects.filter(name=movie_data['movie']).exists():
+            return Response({'error': 'Movie name is required'}, status=400)
+        try:
+            movie = Movie.objects.filter(name=movie_data['movie'])
+            movie_category = MovieCategory.objects.get(movie_id=movie[0].id)
+        except MovieCategory.DoesNotExist:
+            return Response({'error': 'Movie Category not found'}, status=404)
+        
+        if 'category' in request.data:
+            try:
+                category = Category.objects.get(pk=movie_category.id)
+                movie_category.category = request.data['category']
+            except Category.DoesNotExist:
+                return Response({'error': f'Category with ID {movie_category.idgory_id} not found'}, status=404)
+        
+        movie_category.save()
+        return Response(MovieCategorySerializer(movie_category).data,status=204)
 
 class MovieDirectorViewSet(viewsets.ModelViewSet):
     """
@@ -314,7 +329,27 @@ class MovieDirectorViewSet(viewsets.ModelViewSet):
         MovieDirectorAssignment.objects.filter(director_id=director).delete()
         director.delete()
         return Response({'message': 'Director deleted!'}, status=200)
+    
+    def update(self, request, pk=None):
+        if pk is None:
+            return Response({'error': 'Director ID is required'}, status=400)
+        try:
+            director = MovieDirector.objects.get(pk=pk)
+        except MovieDirector.DoesNotExist:
+            return Response({'error': 'Director not found'}, status=404)
+        
+        if 'firstname' not in request.data and 'surname' not in request.data:
+            return Response({'error': 'Firstname or Surname is required'}, status=400)
 
+        if 'firstname' in request.data:
+            director.firstname = request.data['firstname']  
+        
+        if 'surname' in request.data:
+            director.surname = request.data['surname']
+        
+        
+        director.save()
+        return Response(MovieDirectorSerializer(director).data,status=204)
 
 class MovieDirectorAssignmentViewSet(viewsets.ModelViewSet):
     """
@@ -323,6 +358,17 @@ class MovieDirectorAssignmentViewSet(viewsets.ModelViewSet):
     queryset = MovieDirectorAssignment.objects.all()
     serializer_class = MovieDirectorAssignmentSerializer
 
+    @token_and_isstaff_required
+    def destroy(self, request, pk=None):
+        return Response({'error': 'Method not allowed'}, status=405)
+    
+    @token_and_isstaff_required
+    def update(self, request, pk=None):
+        return Response({'error': 'Method not allowed'}, status=405)
+    
+    @token_and_isstaff_required
+    def create(self, request):
+        return Response({'error': 'Method not allowed'}, status=405)
 
 class DescriptionViewSet(viewsets.ModelViewSet):
     """
@@ -330,7 +376,31 @@ class DescriptionViewSet(viewsets.ModelViewSet):
     """
     queryset = Description.objects.all()
     serializer_class = DescriptionSerializer
-
+    
+    @token_and_isstaff_required
+    def update(self, request, pk=None):
+        if pk is None:
+            return Response({'error': 'Description ID is required'}, status=400)
+        try:
+            description = Description.objects.get(pk=pk)
+        except Description.DoesNotExist:
+            return Response({'error': 'Description not found'}, status=404)
+        
+        if 'description' in request.data:
+            description.description = request.data['description']
+            description.save()
+        else:
+            return Response({'error': 'Description is required'}, status=400)
+        
+        return Response(DescriptionSerializer(description).data,status=204)
+    
+    @token_and_isstaff_required
+    def destroy(self, request, pk=None):
+        return Response({'error': 'Method not allowed'}, status=405)
+    
+    @token_and_isstaff_required
+    def create(self, request):
+        return Response({'error': 'Method not allowed'}, status=405)
 
 class RatingViewSet(viewsets.ModelViewSet):
     """
