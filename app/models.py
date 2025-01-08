@@ -118,10 +118,9 @@ class Rating(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     stars = models.IntegerField()
-    text = models.TextField()
+    text = models.TextField(blank=True, null=True)
 
-    def __str__(self):
-        return f"Rating by {self.user.name} for {self.movie.name}"
+
 
     class Meta:
         db_table = 'app_rating'  # Custom table name for migration consistency

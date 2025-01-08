@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action
 
 
 
@@ -85,7 +86,9 @@ class RatingViewSet(viewsets.ModelViewSet):
         return Response(rating_serializer.errors, status=400)
     
     @token_and_isstaff_required
-    def destroy(self, request, pk=None):
+    @action(detail=False, methods=['delete'])
+    def destroy_user_rating(self,request):
+        pk = request.data.get('rating_id')
         if pk is None:
             return Response({'error': 'Rating ID is required'}, status=400)
         try:
@@ -97,5 +100,5 @@ class RatingViewSet(viewsets.ModelViewSet):
         return Response({'message': 'Rating deleted!'}, status=200)
     
     @token_and_isstaff_required
-    def update(self, request):
+    def update(self, request,pk=None):
         return Response({'error': 'Method not allowed'}, status=405)

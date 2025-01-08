@@ -60,7 +60,7 @@ def token_and_user_required(view_func):
     A decorator to check if the user has a valid token.
     """
     @wraps(view_func)
-    def _wrapped_view(self,request, args, **kwargs):
+    def _wrapped_view(self,request, *args, **kwargs):
         # Extract the token from the Authorization header
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith('Token '):
@@ -76,5 +76,5 @@ def token_and_user_required(view_func):
             return JsonResponse({'error': 'Invalid token'}, status=401)
 
         # Proceed to the view
-        return view_func(self,request,args, **kwargs)
+        return view_func(self,request,*args, **kwargs)
     return _wrapped_view

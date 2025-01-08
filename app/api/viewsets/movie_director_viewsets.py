@@ -49,6 +49,7 @@ class MovieDirectorViewSet(viewsets.ModelViewSet):
         director.delete()
         return Response({'message': 'Director deleted!'}, status=200)
     
+    @token_and_isstaff_required
     def update(self, request, pk=None):
         if pk is None:
             return Response({'error': 'Director ID is required'}, status=400)

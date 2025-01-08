@@ -96,6 +96,7 @@ class MovieViewSet(viewsets.ModelViewSet):
                 description.save()
             except Description.DoesNotExist:
                 return Response({'error': 'Description not found'}, status=404)
+       
         
         if 'category' in request.data:
             MovieCategory.objects.filter(movie=movie).delete()

@@ -56,3 +56,26 @@ class CategoryViewSet(viewsets.ModelViewSet):
         MovieCategory.objects.filter(category=category).delete()
         category.delete()
         return Response({'message': 'Category deleted!'}, status=200)
+    
+    @token_and_isstaff_required
+    def update(self, request, pk=None):
+        """
+        Update a category by ID.
+        """
+        if pk is None:
+            return Response({'error': 'Category ID is required'}, status=400)
+        try:
+            category = Category.objects.get(pk=pk)
+        except Category.DoesNotExist:
+            return Response({'error': 'Category not found'}, status=404)
+
+        category_data = request.data
+        if 'category' not in category_data:
+            return Response({'error': 'Category is required'}, status=400)
+
+        if Category.objects.filter(category=category_data['category']).exists():
+            return Response({'error': 'Category already exists'}, status=400)
+
+        category.category = category_data['category']
+        category.save()
+        return Response({'message': 'Category updated!'}, status=200)
