@@ -246,6 +246,9 @@ class MovieViewSet(viewsets.ModelViewSet):
                 return Response({'error': 'Description not found'}, status=404)
         
         if 'category' in request.data:
+            if not Category.objects.filter(category=request.data['category']).exists():
+                return Response({'error': 'Category not found'}, status=404)
+            
             MovieCategory.objects.filter(movie=movie).delete()
             for category_id in request.data['category']:
                 try:
