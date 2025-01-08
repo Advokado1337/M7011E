@@ -139,6 +139,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+if not GOOGLE_CLIENT_ID:
+    raise Exception('GOOGLE_CLIENT_ID is not set in .env file')
+
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
+if not GOOGLE_CLIENT_SECRET:
+    raise Exception('GOOGLE_CLIENT_SECRET is not set in .env file')
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
