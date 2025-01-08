@@ -52,12 +52,16 @@ def random_movie(length):
 
 def setup_categories():
     categories = ['Action', 'Comedy', 'Drama']
+    token = login_auth()
+    headers = {'Authorization': f'Token {token}'}
 
     categories_server = requests.get("http://localhost:8000/api/v1/categories/").json()
-    if categories != [category['category'] for category in categories_server]:
-        for category in categories:
-            response = requests.post("http://localhost:8000/api/v1/categories/", json={'category': category})
-            assert response.status_code == 201
+    existing_categories = [category['category'] for category in categories_server]
+    
+    for category in categories:
+        if category not in existing_categories:
+            response = requests.post("http://localhost:8000/api/v1/categories/", json={'category': category}, headers=headers)
+            assert response.status_code == 201, f"Failed to create category '{category}': {response.status_code} - {response.text}"
             assert 'category' in response.json()
     
 
