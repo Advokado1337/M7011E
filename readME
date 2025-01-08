@@ -1,3 +1,6 @@
+
+
+
 # Movie Website Project
 
 This project is a Django-based web application for managing movies and reviews. It uses Docker for containerization, MySQL for the database, and Pytest for running tests. Below, you'll find all the necessary instructions to set up and run the project.
