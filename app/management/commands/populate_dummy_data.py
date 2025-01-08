@@ -34,9 +34,9 @@ class Command(BaseCommand):
 
         user3, created = User.objects.get_or_create(
             username='jane_smith',
-            email=os.environ.get('ADMIN'),
+            email='jane_smith@example.com',
             defaults={
-                'password': os.environ.get('ADMINPASS'),
+                'password': 'password456',
             }
         )
         if created:
