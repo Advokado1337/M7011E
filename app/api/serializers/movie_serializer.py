@@ -1,22 +1,5 @@
 from rest_framework import serializers
-from ..models import Category, Movie, MovieCategory, MovieDirector, MovieDirectorAssignment, Description, Rating
-from django.contrib.auth.models import User
-
-class UserRegistrationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('email','password')
-
-    def create(self, validated_data):
-        validated_data['username'] = validated_data['email']
-        auth_user = User.objects.create_user(**validated_data)
-        return auth_user
-
-class UsersSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'password', 'email']
-
+from app.models import Category, Movie, MovieCategory, MovieDirector, MovieDirectorAssignment, Description, Rating
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
