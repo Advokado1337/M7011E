@@ -11,11 +11,11 @@ This project is a Django-based web application for managing movies and reviews. 
 
 Before you start, ensure you have the following installed on your system:
 
-- [Docker](https://www.docker.com/): Used to containerize the application and manage dependencies.
-- [Docker Compose](https://docs.docker.com/compose/): To orchestrate multiple containers.
-- [MySQL](https://www.mysql.com/): The database used for the project (handled via Docker).
-- [Pytest](https://docs.pytest.org/): For running unit tests.
-- [Postman](https://www.postman.com/): For testing APIs.
+- Docker: Used to containerize the application and manage dependencies.
+- Docker Compose: To orchestrate multiple containers.
+- MySQL: The database used for the project (handled via Docker).
+- Pytest: For running unit tests.
+- Postman For testing APIs.
 
 ---
 
