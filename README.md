@@ -52,7 +52,7 @@ GOOGLE_CLIENT_ID=yourclientid
 GOOGLE_CLIENT_SECRET=yourclientsecret
 ```
 
-Ensure you replace placeholder values with your actual configuration.
+> **Note:** Ensure you replace placeholder values with your actual configuration.
 
 ### 3. Build and Run the Project
 
@@ -70,7 +70,7 @@ This command will:
 
 The Django application and the MySQL database are run in separate Docker containers. This ensures that the application and database are isolated but can communicate with each other using Docker networking. The configuration for these containers is defined in the `docker-compose.yml` file.
 
-Access the application at http://localhost:8000 (or the port configured in your `docker-compose.yml` file).
+> **Access the application**: Open [http://localhost:8000](http://localhost:8000) (or the port configured in your `docker-compose.yml` file).
 
 ---
 
@@ -123,6 +123,3 @@ docker system prune -a
 ⚠️ **Warning:** This will delete all stopped containers, unused networks, dangling images, and build cache.
 
 ---
-
-
-
