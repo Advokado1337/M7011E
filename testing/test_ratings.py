@@ -151,6 +151,11 @@ def test_update_rating_not_allowed():
     assert response.status_code == 405
     assert response.json() == {'error': 'Method not allowed'}
 
+def test_update_no_login_user():
+    movie_name = setup_movie()
+    response = requests.post(ENDPOINTratings, json={'stars': 5, 'movie': movie_name})
+    assert response.status_code == 401
+
 def test_auth_for_all():
    
     response = requests.delete(ENDPOINTratings)
